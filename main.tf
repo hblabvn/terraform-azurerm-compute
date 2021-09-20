@@ -312,5 +312,5 @@ resource "azurerm_network_interface_security_group_association" "test" {
 resource "azurerm_network_interface_security_group_association" "custom" {
   count                     = var.nsg_custome_id != "" ? var.nb_instances : 0
   network_interface_id      = azurerm_network_interface.vm[count.index].id
-  network_security_group_id = var.sg_custome_id
+  network_security_group_id = var.nsg_custome_id
 }
