@@ -246,3 +246,9 @@ variable "os_profile_secrets" {
   type        = list(map(string))
   default     = []
 }
+
+variable "nsg_custome_id" {
+  description = "The ID of customed network security group assigned to this vm."
+  type        = string
+  default     = ""
+}
