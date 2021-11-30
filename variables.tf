@@ -252,3 +252,21 @@ variable "nsg_custome_id" {
   type        = string
   default     = ""
 }
+
+variable "computer_name" {
+  description = "OS hostname of the Virtual Machine. Default is empty when using vm_hostname as hostname"
+  type        = string
+  default     = ""
+}
+
+variable "pip_name" {
+  description = "The custom pip name"
+  type        = string
+  default     = ""
+}
+
+variable "nic_name" {
+  description = "The custom network interface name"
+  type        = string
+  default     = ""
+}

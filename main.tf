@@ -9,6 +9,11 @@ data "azurerm_resource_group" "vm" {
 
 locals {
   ssh_keys = compact(concat([var.ssh_key], var.extra_ssh_keys))
+
+  computer_name = coalesce(var.computer_name, var.vm_hostname)
+  pip_name      = coalesce(var.pip_name, "${var.vm_hostname}-pip")
+  nic_name      = coalesce(var.nic_name, "${var.vm_hostname}-nic")
+
 }
 
 resource "random_id" "vm-sa" {
@@ -31,7 +36,7 @@ resource "azurerm_storage_account" "vm-sa" {
 
 resource "azurerm_virtual_machine" "vm-linux" {
   count                            = !contains(tolist([var.vm_os_simple, var.vm_os_offer]), "WindowsServer") && !var.is_windows_image ? var.nb_instances : 0
-  name                             = "${var.vm_hostname}-vmLinux-${count.index}"
+  name                             = var.nb_instances > 1 ? "${var.vm_hostname}-${count.index}" : var.vm_hostname
   resource_group_name              = data.azurerm_resource_group.vm.name
   location                         = coalesce(var.location, data.azurerm_resource_group.vm.location)
   availability_set_id              = azurerm_availability_set.vm.id
@@ -93,7 +98,7 @@ resource "azurerm_virtual_machine" "vm-linux" {
   }
 
   os_profile {
-    computer_name  = "${var.vm_hostname}-${count.index}"
+    computer_name  = var.nb_instances > 1 ? "${local.computer_name}-${count.index}" : local.computer_name
     admin_username = var.admin_username
     admin_password = var.admin_password
     custom_data    = var.custom_data
@@ -244,7 +249,7 @@ resource "azurerm_availability_set" "vm" {
 
 resource "azurerm_public_ip" "vm" {
   count               = var.nb_public_ip
-  name                = "${var.vm_hostname}-pip-${count.index}"
+  name                = var.nb_instances > 1 ? "${local.pip_name}-${count.index}" : local.pip_name
   resource_group_name = data.azurerm_resource_group.vm.name
   location            = coalesce(var.location, data.azurerm_resource_group.vm.location)
   allocation_method   = var.allocation_method
@@ -262,7 +267,7 @@ data "azurerm_public_ip" "vm" {
 }
 
 resource "azurerm_network_security_group" "vm" {
-  count = var.nsg_custome_id == "" ? 1 : 0
+  count               = var.nsg_custome_id == "" ? 1 : 0
   name                = "${var.vm_hostname}-nsg"
   resource_group_name = data.azurerm_resource_group.vm.name
   location            = coalesce(var.location, data.azurerm_resource_group.vm.location)
@@ -283,12 +288,12 @@ resource "azurerm_network_security_rule" "vm" {
   destination_port_range      = coalesce(var.remote_port, module.os.calculated_remote_port)
   source_address_prefixes     = var.source_address_prefixes
   destination_address_prefix  = "*"
-  network_security_group_name = concat(azurerm_network_security_group.vm.*.name , tolist([""]))[0]
+  network_security_group_name = concat(azurerm_network_security_group.vm.*.name, tolist([""]))[0]
 }
 
 resource "azurerm_network_interface" "vm" {
   count                         = var.nb_instances
-  name                          = "${var.vm_hostname}-nic-${count.index}"
+  name                          = var.nb_instances > 1 ? "${local.nic_name}-${count.index}" : local.nic_name
   resource_group_name           = data.azurerm_resource_group.vm.name
   location                      = coalesce(var.location, data.azurerm_resource_group.vm.location)
   enable_accelerated_networking = var.enable_accelerated_networking
@@ -306,7 +311,7 @@ resource "azurerm_network_interface" "vm" {
 resource "azurerm_network_interface_security_group_association" "test" {
   count                     = var.nsg_custome_id == "" ? var.nb_instances : 0
   network_interface_id      = azurerm_network_interface.vm[count.index].id
-  network_security_group_id = concat(azurerm_network_security_group.vm.*.id , tolist([""]))[0]
+  network_security_group_id = concat(azurerm_network_security_group.vm.*.id, tolist([""]))[0]
 }
 
 resource "azurerm_network_interface_security_group_association" "custom" {
