@@ -40,7 +40,7 @@ resource "azurerm_virtual_machine" "vm-linux" {
   name                             = var.nb_instances > 1 ? "${var.vm_hostname}-${count.index}" : var.vm_hostname
   resource_group_name              = data.azurerm_resource_group.vm.name
   location                         = coalesce(var.location, data.azurerm_resource_group.vm.location)
-  availability_set_id              = azurerm_availability_set.vm.id
+  availability_set_id              = azurerm_availability_set.vm[0].id
   vm_size                          = var.vm_size
   network_interface_ids            = [element(azurerm_network_interface.vm.*.id, count.index)]
   delete_os_disk_on_termination    = var.delete_os_disk_on_termination
@@ -150,7 +150,7 @@ resource "azurerm_virtual_machine" "vm-windows" {
   name                          = "${var.vm_hostname}-vmWindows-${count.index}"
   resource_group_name           = data.azurerm_resource_group.vm.name
   location                      = coalesce(var.location, data.azurerm_resource_group.vm.location)
-  availability_set_id           = azurerm_availability_set.vm.id
+  availability_set_id           = azurerm_availability_set.vm[0].id
   vm_size                       = var.vm_size
   network_interface_ids         = [element(azurerm_network_interface.vm.*.id, count.index)]
   delete_os_disk_on_termination = var.delete_os_disk_on_termination
@@ -239,7 +239,7 @@ resource "azurerm_virtual_machine" "vm-windows" {
 }
 
 resource "azurerm_availability_set" "vm" {
-  count = var.use_availability_set ? 1 : 0
+  count                        = var.use_availability_set ? 1 : 0
   name                         = "${var.vm_hostname}-avset"
   resource_group_name          = data.azurerm_resource_group.vm.name
   location                     = coalesce(var.location, data.azurerm_resource_group.vm.location)
