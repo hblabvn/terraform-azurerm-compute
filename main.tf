@@ -14,6 +14,7 @@ locals {
   pip_name      = coalesce(var.pip_name, "${var.vm_hostname}-pip")
   nic_name      = coalesce(var.nic_name, "${var.vm_hostname}-nic")
   ip_conf_name  = coalesce(var.ip_conf_name, "${var.vm_hostname}-ip")
+  os_disk_name  = coalesce(var.os_disk_name, "osdisk-${var.vm_hostname}")
 
 }
 
@@ -70,7 +71,7 @@ resource "azurerm_virtual_machine" "vm-linux" {
   }
 
   storage_os_disk {
-    name              = "osdisk-${var.vm_hostname}-${count.index}"
+    name              = var.nb_instances > 1 ? "${local.os_disk_name}-${count.index}" : local.os_disk_name
     create_option     = "FromImage"
     caching           = "ReadWrite"
     managed_disk_type = var.storage_account_type
@@ -147,7 +148,7 @@ resource "azurerm_virtual_machine" "vm-linux" {
 
 resource "azurerm_virtual_machine" "vm-windows" {
   count                         = (var.is_windows_image || contains(tolist([var.vm_os_simple, var.vm_os_offer]), "WindowsServer")) ? var.nb_instances : 0
-  name                          = "${var.vm_hostname}-vmWindows-${count.index}"
+  name                          = var.nb_instances > 1 ? "${var.vm_hostname}-${count.index}" : var.vm_hostname
   resource_group_name           = data.azurerm_resource_group.vm.name
   location                      = coalesce(var.location, data.azurerm_resource_group.vm.location)
   availability_set_id           = var.use_availability_set ? azurerm_availability_set.vm[0].id : null
@@ -209,7 +210,7 @@ resource "azurerm_virtual_machine" "vm-windows" {
   }
 
   os_profile {
-    computer_name  = "${var.vm_hostname}-${count.index}"
+    computer_name  = var.nb_instances > 1 ? "${local.computer_name}-${count.index}" : local.computer_name
     admin_username = var.admin_username
     admin_password = var.admin_password
   }

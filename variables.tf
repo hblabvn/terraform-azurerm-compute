@@ -282,3 +282,9 @@ variable "use_availability_set" {
   type        = bool
   default     = true
 }
+
+variable "os_disk_name" {
+  description = "The custom storage os disk name"
+  type        = string
+  default     = ""
+}
