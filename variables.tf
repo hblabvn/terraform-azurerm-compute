@@ -270,3 +270,21 @@ variable "nic_name" {
   type        = string
   default     = ""
 }
+
+variable "nic_name" {
+  description = "The custom network interface name"
+  type        = string
+  default     = ""
+}
+
+variable "ip_conf_name" {
+  description = "The custom ip configuration name"
+  type        = string
+  default     = ""
+}
+
+variable "use_availability_set" {
+  description = "Whether to use availability set"
+  type        = bool
+  default     = true
+}

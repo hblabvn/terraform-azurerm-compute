@@ -13,6 +13,7 @@ locals {
   computer_name = coalesce(var.computer_name, var.vm_hostname)
   pip_name      = coalesce(var.pip_name, "${var.vm_hostname}-pip")
   nic_name      = coalesce(var.nic_name, "${var.vm_hostname}-nic")
+  ip_conf_name  = coalesce(var.ip_conf_name, "${var.vm_hostname}-ip")
 
 }
 
@@ -238,6 +239,7 @@ resource "azurerm_virtual_machine" "vm-windows" {
 }
 
 resource "azurerm_availability_set" "vm" {
+  count = var.use_availability_set ? 1 : 0
   name                         = "${var.vm_hostname}-avset"
   resource_group_name          = data.azurerm_resource_group.vm.name
   location                     = coalesce(var.location, data.azurerm_resource_group.vm.location)
@@ -299,7 +301,7 @@ resource "azurerm_network_interface" "vm" {
   enable_accelerated_networking = var.enable_accelerated_networking
 
   ip_configuration {
-    name                          = "${var.vm_hostname}-ip-${count.index}"
+    name                          = var.nb_instances > 1 ? "${local.ip_conf_name}-${count.index}" : local.ip_conf_name
     subnet_id                     = var.vnet_subnet_id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = length(azurerm_public_ip.vm.*.id) > 0 ? element(concat(azurerm_public_ip.vm.*.id, tolist([""])), count.index) : ""
