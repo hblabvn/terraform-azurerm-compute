@@ -271,12 +271,6 @@ variable "nic_name" {
   default     = ""
 }
 
-variable "nic_name" {
-  description = "The custom network interface name"
-  type        = string
-  default     = ""
-}
-
 variable "ip_conf_name" {
   description = "The custom ip configuration name"
   type        = string
