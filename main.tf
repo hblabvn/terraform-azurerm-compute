@@ -217,8 +217,14 @@ resource "azurerm_virtual_machine" "vm-windows" {
 
   tags = var.tags
 
-  os_profile_windows_config {
-    provision_vm_agent = true
+  dynamic "os_profile_windows_config" {
+    for_each = var.os_profile_windows_config == {} ? [] : [1]
+
+    content {
+      enable_automatic_upgrades = lookup(var.os_profile_windows_config, "provision_vm_agent", false)
+      provision_vm_agent        = lookup(var.os_profile_windows_config, "provision_vm_agent", true)
+      timezone                  = lookup(var.os_profile_windows_config, "timezone", null)
+    }
   }
 
   dynamic "os_profile_secrets" {

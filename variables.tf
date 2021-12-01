@@ -288,3 +288,9 @@ variable "os_disk_name" {
   type        = string
   default     = ""
 }
+
+variable "os_profile_windows_config" {
+  description = "The config of os storage for windows"
+  type        = map(string)
+  default     = {}
+}
