@@ -80,7 +80,7 @@ resource "azurerm_virtual_machine" "vm-linux" {
   dynamic "storage_data_disk" {
     for_each = range(var.nb_data_disk)
     content {
-      name              = "${var.vm_hostname}-datadisk-${count.index}-${storage_data_disk.value}"
+      name              = var.nb_data_disk > 1 ? "${var.vm_hostname}-datadisk-${count.index}-${storage_data_disk.value}" : "${var.vm_hostname}-datadisk"
       create_option     = "Empty"
       lun               = storage_data_disk.value
       disk_size_gb      = var.data_disk_size_gb
